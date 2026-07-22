@@ -6,7 +6,6 @@ from sentence_transformers import SentenceTransformer
 import json
 
 # --- 0. OTOMATİK TEMA AYARI (Tek Dosya Çözümü) ---
-# Streamlit için gerekli tema klasörünü ve dosyasını kod içinden otomatik oluşturuyoruz
 if not os.path.exists('.streamlit'):
     os.makedirs('.streamlit')
 
@@ -24,7 +23,6 @@ font = "sans serif"
 # --- 1. SAYFA AYARLARI VE GLOBAL CSS ---
 st.set_page_config(page_title="Test and Verification Team Panel", layout="wide")
 
-# Streamlit'in varsayılan üst boşluklarını ve menülerini gizleyerek daha "uygulama" hissi verelim
 st.markdown("""
 <style>
     .block-container { padding-top: 2rem; padding-bottom: 0rem; }
@@ -94,7 +92,6 @@ with tab1:
         st.session_state.secili_case = None
         st.session_state.case_durumu = None
 
-    # Daha katı (rigid) görünüm için ana içeriği bir kart içine alıyoruz
     with st.container(border=True):
         st.markdown("<h3 style='margin-top:0;'>Jira Akıllı Arama Motoru</h3>", unsafe_allow_html=True)
 
@@ -186,6 +183,7 @@ with tab2:
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Enqura Panel Operasyon Destek Sistemi</title>
         <style>
             :root {
                 --bg-color: transparent;
@@ -231,6 +229,15 @@ with tab2:
                     --banner-border: #0ea5e9;
                     --banner-text: #38bdf8;
                 }
+                
+                header { background-color: transparent !important; border-bottom-color: var(--border-color) !important; }
+                header h1 { color: var(--primary) !important; }
+                header svg circle[fill="#2d3748"] { fill: #f8fafc; } /* Logoyu aydınlık yapar */
+                header svg circle[fill="#ffffff"] { fill: #1e293b; }
+                header svg polygon { fill: #1e293b; }
+                header svg path[fill="#ffffff"] { fill: #1e293b; }
+                
+                footer { background: transparent !important; border-top-color: var(--border-color) !important; }
                 .box-error { background-color: rgba(239, 68, 68, 0.1) !important; border-color: #ef4444 !important; color: #fca5a5 !important; }
                 .box-warning { background-color: rgba(245, 158, 11, 0.1) !important; border-color: #f59e0b !important; color: #fcd34d !important; }
                 .box-success { background-color: rgba(34, 197, 94, 0.1) !important; border-color: #22c55e !important; color: #86efac !important; }
@@ -238,6 +245,7 @@ with tab2:
                 .bio-box, .bio-circle, .bio-line { background: #334155 !important; }
                 .bio-visual { background: #0f172a !important; border-color: #334155 !important; }
                 input, select { color: #f8fafc !important; }
+                .info-banner { background-color: var(--banner-bg) !important; border-color: var(--banner-border) !important; color: var(--banner-text) !important; }
             }
 
             body {
@@ -245,12 +253,33 @@ with tab2:
                 background-color: var(--bg-color);
                 color: var(--text-dark);
                 margin: 0;
-                padding: 10px 0;
+                padding: 0;
+            }
+
+            header {
+                background-color: var(--card-bg);
+                padding: 15px 40px;
+                display: flex;
+                align-items: center;
+                gap: 15px;
+                box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+                border-bottom: 1px solid var(--border-color);
+            }
+
+            .logo-container svg { width: 45px; height: 45px; }
+
+            header h1 {
+                margin: 0;
+                font-size: 22px;
+                font-weight: 700;
+                color: var(--primary);
+                letter-spacing: -0.5px;
             }
 
             .container {
-                max-width: 100%;
-                margin: 0 auto;
+                max-width: 1450px;
+                margin: 30px auto;
+                padding: 0 20px;
             }
 
             .info-banner {
@@ -259,13 +288,16 @@ with tab2:
                 color: var(--banner-text);
                 padding: 16px 20px;
                 border-radius: 8px;
-                margin-bottom: 25px;
+                margin-bottom: 30px;
                 font-size: 14px;
                 line-height: 1.5;
                 display: flex;
                 align-items: flex-start;
                 gap: 12px;
+                box-shadow: 0 1px 3px rgba(0,0,0,0.05);
             }
+
+            .info-banner strong { font-weight: 700; }
 
             .grid {
                 display: grid;
@@ -277,6 +309,7 @@ with tab2:
                 background: var(--card-bg);
                 padding: 25px 20px;
                 border-radius: 12px;
+                box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
                 border: 1px solid var(--border-color);
                 transition: all 0.3s ease;
             }
@@ -312,6 +345,7 @@ with tab2:
                 display: flex;
                 align-items: center;
                 justify-content: center;
+                transition: background-color 0.3s ease;
             }
             
             .status-icon.success { background-color: var(--icon-bg-green); }
@@ -345,31 +379,49 @@ with tab2:
                 padding: 6px;
                 outline: none;
                 border-radius: 4px;
+                transition: all 0.2s;
             }
 
             .form-row input:focus, .form-row select:focus {
                 background: var(--focus-bg);
                 border-bottom: 1px solid var(--blue-line);
+                color: var(--text-dark);
             }
 
             .bio-visual {
-                display: flex; align-items: center; justify-content: center; gap: 10px;
-                margin-bottom: 20px; padding: 10px; background: #f8fafc;
-                border-radius: 8px; border: 1px dashed var(--border-color);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                gap: 10px;
+                margin-bottom: 20px;
+                padding: 10px;
+                background: #f8fafc;
+                border-radius: 8px;
+                border: 1px dashed var(--border-color);
             }
             .bio-box { width: 45px; height: 45px; background: #e2e8f0; border-radius: 6px; }
             .bio-circle { width: 30px; height: 30px; background: #e2e8f0; border-radius: 50%; }
             .bio-line { height: 2px; width: 30px; background: #e2e8f0; }
 
             .btn-submit {
-                display: block; width: 100%; max-width: 350px; margin: 30px auto;
-                padding: 15px; background-color: var(--blue-line); color: white;
-                border: none; border-radius: 8px; font-size: 16px; font-weight: bold;
-                cursor: pointer; transition: opacity 0.3s;
+                display: block;
+                width: 100%;
+                max-width: 350px;
+                margin: 40px auto;
+                padding: 15px;
+                background-color: var(--blue-line);
+                color: white;
+                border: none;
+                border-radius: 8px;
+                font-size: 16px;
+                font-weight: bold;
+                cursor: pointer;
+                box-shadow: 0 4px 10px rgba(14, 165, 233, 0.3);
+                transition: opacity 0.3s;
             }
             .btn-submit:hover { opacity: 0.9; }
 
-            #sonuc-alani { display: none; margin-bottom: 20px; }
+            #sonuc-alani { display: none; margin-bottom: 40px; }
             .result-box { padding: 20px; border-radius: 8px; margin-bottom: 15px; }
             .result-box ul { margin: 10px 0 0 0; padding-left: 20px; }
             .result-box li { margin-bottom: 8px; line-height: 1.5; font-size: 14px; }
@@ -380,18 +432,44 @@ with tab2:
             .box-info { background-color: #e0f2fe; color: #0369a1; border: 1px solid #bae6fd; }
 
             footer {
-                text-align: center; padding: 20px; color: var(--text-light);
-                font-size: 13px; border-top: 1px solid var(--border-color); margin-top: 20px;
+                text-align: center;
+                padding: 30px 20px;
+                color: var(--text-light);
+                font-size: 13px;
+                border-top: 1px solid var(--border-color);
+                margin-top: 40px;
+                background: var(--card-bg);
             }
             footer a { color: var(--blue-line); text-decoration: none; font-weight: 600; }
+            footer a:hover { text-decoration: underline; }
+            .footer-team { margin-top: 6px; font-size: 11px; font-weight: bold; color: #94a3b8; letter-spacing: 1px; }
+
         </style>
     </head>
     <body>
 
+    <header>
+        <div class="logo-container">
+            <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="50" cy="50" r="48" fill="#2d3748" />
+                <circle cx="33" cy="53" r="16" fill="#ffffff" />
+                <circle cx="67" cy="53" r="16" fill="#ffffff" />
+                <circle cx="33" cy="53" r="6" fill="#2d3748" />
+                <circle cx="67" cy="53" r="6" fill="#2d3748" />
+                <circle cx="31" cy="51" r="2" fill="#ffffff" />
+                <circle cx="65" cy="51" r="2" fill="#ffffff" />
+                <polygon points="50,65 44,53 56,53" fill="#ffffff" />
+                <path d="M 12 43 Q 33 20 50 43 Q 67 20 88 43 Q 67 43 50 33 Q 33 43 12 43 Z" fill="#ffffff" />
+            </svg>
+        </div>
+        <h1>Enqura Panel Operasyon Destek Sistemi</h1>
+    </header>
+
     <div class="container">
+        
         <div class="info-banner">
             <div>
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#0ea5e9" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
             </div>
             <div>
                 <strong>Uyarı Notu:</strong> Enqura panel üzerinde kişiye dair tüm bilgileri doğru bir şekilde var olanları giriniz, olmayanları boş bırakınız. Yapı buna göre hata tahmini yapacaktır.
@@ -542,9 +620,11 @@ with tab2:
     <footer>
         <div>Bu sayfa Mahmut Burak Ceylan tarafından geliştirilmiştir.</div>
         <div style="margin-top: 5px;">İletişim ve destek için: <a href="mailto:burak.ceylan@tokeninc.com">burak.ceylan@tokeninc.com</a></div>
+        <div class="footer-team">TOKEN TEST AND VERIFICATION TEAM</div>
     </footer>
 
     <script>
+        // --- OTOMATİK TARİH FORMATLAMA (GG.AA.YYYY) ---
         document.querySelectorAll('.date-input').forEach(input => {
             input.addEventListener('input', function(e) {
                 let v = this.value.replace(/\D/g, '');
@@ -556,12 +636,15 @@ with tab2:
 
         const svgCheck = '<path d="M9 16.2L4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4L9 16.2z"/>';
         const svgCross = '<path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z"/>';
-        const svgDash = '<path d="M19 13H5v-2h14v2z"/>'; 
+        const svgDash = '<path d="M19 13H5v-2h14v2z"/>'; // Nötr durum ikonu
 
         function tarihGecmisMi(tarihStr) {
             if (!tarihStr || tarihStr.length < 10) return false;
+            
+            // Gelen tarihteki tüm tire ve slash işaretlerini noktaya çevirerek normalize ediyoruz
             let normalizeTarih = tarihStr.replace(/[-/]/g, '.');
             let parcalar = normalizeTarih.split('.');
+            
             if (parcalar.length === 3) {
                 let gun = parseInt(parcalar[0]);
                 let ay = parseInt(parcalar[1]) - 1; 
@@ -574,6 +657,7 @@ with tab2:
             return false; 
         }
 
+        // Kart Renklerini ve İkonları Güncelleyen Fonksiyon
         function updateCardState(id, hasData, hasError) {
             const cardElem = document.getElementById('card-' + id);
             const iconElem = document.getElementById('icon-' + id);
@@ -590,6 +674,7 @@ with tab2:
                 iconElem.className = 'status-icon success';
                 svgElem.innerHTML = svgCheck;
             } else {
+                // Hiç veri girilmemişse nötr (gri) kalır, kesinlikle yeşil olmaz
                 cardElem.style.backgroundColor = 'var(--card-bg)';
                 cardElem.style.borderColor = 'var(--border-color)';
                 iconElem.className = 'status-icon';
@@ -616,6 +701,8 @@ with tab2:
             const bioSkorStr = document.getElementById('bio-skor').value;
             const bioSkor = parseInt(bioSkorStr);
 
+            // Tarih karşılaştırmalarında (nokta, tire vb.) format hatalarından kaçınmak için 
+            // verilerdeki rakam harici tüm karakterleri (\D) siliyoruz.
             const kpsDogumSadeceRakam = kpsDogum.replace(/\D/g, '');
             const ocrDogumSadeceRakam = ocrDogum.replace(/\D/g, '');
             const kpsGecerlilikSadeceRakam = kpsGecerlilik.replace(/\D/g, '');
@@ -629,6 +716,7 @@ with tab2:
             let errNfc = false;
             let errBio = false;
 
+            // Panellerde herhangi bir veri var mı kontrolü
             const hasKpsData = kpsSeri !== "" || kpsDogum !== "" || kpsGecerlilik !== "";
             const hasOcrData = ocrSeri !== "" || ocrDogum !== "" || ocrGecerlilik !== "" || ocrKirik !== "" || ocrGorsel !== "";
             const hasNfcData = nfcSeri !== "" || nfcDogum !== "" || nfcGecerlilik !== "" || nfcDurum !== "";
@@ -639,11 +727,11 @@ with tab2:
 
             if (hasKpsData && !kpsDogum && digerPanellerBos) {
                 errKps = true;
-                hatalar.push("Sadece KPS alanı var ve başka bilgi gelmemiş. Doğum tarihi alınamadı. Bu da kullanıcının doğum tarihini yanlış girdiği anlamına gelmektedir.<br><span style='color:#a8a29e; font-size:13px;'><strong>Yazılım ekibine iletin:</strong> Lütfen Oliz için 'customer_kps' ve 'customer' tablolarından silin. Kurumsal için 'customer_kps', 'customer' ve 'corporate_user' tablosunda silin.</span>");
+                hatalar.push("Sadece KPS alanı var ve başka bilgi gelmemiş. Doğum tarihi alınamadı. Bu da kullanıcının doğum tarihini yanlış girdiği anlamına gelmektedir.<br><span style='color:#475569; font-size:13px;'><strong>Yazılım ekibine iletin:</strong> Lütfen Oliz için 'customer_kps' ve 'customer' tablolarından silin. Kurumsal için 'customer_kps', 'customer' ve 'corporate_user' tablosunda silin.</span>");
             } 
             else if (kpsDigerVerilerVar && !kpsDogum) {
                 errKps = true;
-                hatalar.push("KPS bilgileri tam doldurulmamış (Doğum tarihi eksik). Genellikle doğum tarihi hatalı demektir.<br><span style='color:#a8a29e; font-size:13px;'><strong>Yazılım ekibine iletin:</strong> Lütfen Oliz için 'customer_kps' ve 'customer' tablolarından silin. Kurumsal için 'customer_kps', 'customer' ve 'corporate_user' tablosunda silin.</span>");
+                hatalar.push("KPS bilgileri tam doldurulmamış (Doğum tarihi eksik). Genellikle doğum tarihi hatalı demektir.<br><span style='color:#475569; font-size:13px;'><strong>Yazılım ekibine iletin:</strong> Lütfen Oliz için 'customer_kps' ve 'customer' tablolarından silin. Kurumsal için 'customer_kps', 'customer' ve 'corporate_user' tablosunda silin.</span>");
             }
             
             if (ocrKirik === 'evet') {
@@ -662,11 +750,13 @@ with tab2:
                 hatalar.push("Kimlik seri no eşleşmiyor. Kişinin kimliğini veya kimlik bilgilerini e-devlette güncellemesi gerekmektedir.");
             }
 
+            // Temizlenmiş (sadece rakam içeren) doğum tarihleri karşılaştırılıyor
             if (kpsDogumSadeceRakam && ocrDogumSadeceRakam && kpsDogumSadeceRakam !== ocrDogumSadeceRakam) {
                 errKps = true; errOcr = true;
-                hatalar.push("Doğum tarihleri eşleşmiyor. Doğum tarihini kullanıcı yanlış girmiş.<br><span style='color:#a8a29e; font-size:13px;'><strong>Yazılım ekibine iletin:</strong> Lütfen Oliz için 'customer_kps' ve 'customer' tablolarından silin. Kurumsal için 'customer_kps', 'customer' ve 'corporate_user' tablosunda silin.</span>");
+                hatalar.push("Doğum tarihleri eşleşmiyor. Doğum tarihini kullanıcı yanlış girmiş.<br><span style='color:#475569; font-size:13px;'><strong>Yazılım ekibine iletin:</strong> Lütfen Oliz için 'customer_kps' ve 'customer' tablolarından silin. Kurumsal için 'customer_kps', 'customer' ve 'corporate_user' tablosunda silin.</span>");
             }
 
+            // Temizlenmiş (sadece rakam içeren) geçerlilik tarihleri karşılaştırılıyor
             if (kpsGecerlilikSadeceRakam && ocrGecerlilikSadeceRakam && kpsGecerlilikSadeceRakam !== ocrGecerlilikSadeceRakam) {
                 errKps = true; errOcr = true;
                 hatalar.push("Son geçerlilik tarihleri eşleşmiyor.");
@@ -748,4 +838,5 @@ with tab2:
     </html>
     """
     
-    components.html(ENQURA_HTML, height=1200, scrolling=True)
+    # HTML paneli için yüksekliği arttırdık ki layout daha rahat görünsün
+    components.html(ENQURA_HTML, height=1400, scrolling=True)
